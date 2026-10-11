@@ -1,0 +1,16 @@
+{
+  "name": "atveto",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Client-only web app: generate a second ATProto rotation key and register it with highest priority via your PDS",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build && node scripts/build-client-metadata.mjs",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vite": "^5.4.0"
+  }
+}

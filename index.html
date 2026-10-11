@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>atVeto – zweiter Rotation Key für dein did:plc</title>
+    <meta
+      name="description"
+      content="Erzeugt einen zweiten ATProto-Rotation-Key im Browser und hinterlegt ihn mit höchster Priorität über dein PDS. Keine Speicherung, kein Server."
+    />
+  </head>
+  <body>
+    <main id="app">
+      <h1>atVeto</h1>
+      <p class="tagline">
+        Ein zweiter Rotation Key für deine <code>did:plc</code> – erzeugt und
+        gespeichert nur in deinem Browser, hinterlegt mit höchster Priorität
+        über dein PDS.
+      </p>
+
+      <!-- Step 1: Handle -->
+      <section id="step-handle">
+        <form id="handle-form">
+          <label for="handle-input">Dein Bluesky-Handle</label>
+          <div class="row">
+            <input
+              id="handle-input"
+              type="text"
+              placeholder="z.B. name.bsky.social"
+              autocomplete="off"
+              spellcheck="false"
+              required
+            />
+            <button type="submit" id="handle-submit">Weiter</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Step 2: OAuth redirect notice -->
+      <section id="step-redirect" hidden>
+        <div class="status">
+          <span class="spinner"></span>
+          <span id="redirect-status">Handle wird aufgelöst …</span>
+        </div>
+      </section>
+
+      <!-- Step 3: Token + key -->
+      <section id="step-token" hidden>
+        <h2>2. Token &amp; neuer Schlüssel</h2>
+        <div id="token-request-status" class="status">
+          <span class="spinner"></span>
+          <span>Token wird per E-Mail angefordert …</span>
+        </div>
+
+        <div id="token-requested" hidden>
+          <p class="note">
+            Ein Token wurde an die E-Mail-Adresse deines PDS-Kontos geschickt.
+            Es unten eintragen und bestätigen.
+          </p>
+          <form id="token-form">
+            <label for="token-input">Token aus der E-Mail</label>
+            <div class="row">
+              <input
+                id="token-input"
+                type="text"
+                autocomplete="off"
+                spellcheck="false"
+                required
+              />
+              <button type="submit" id="token-submit">
+                Rotation&nbsp;Key hinterlegen
+              </button>
+            </div>
+          </form>
+          <p class="note">
+            Kein Token angekommen?
+            <button id="regen-token" class="link" type="button">
+              neues Token anfordern
+            </button>
+          </p>
+        </div>
+
+        <div id="key-preview" hidden>
+          <h3>Neuer öffentlicher Schlüssel</h3>
+          <p class="mono" id="new-didkey"></p>
+
+          <h3>Rotation Keys nach dem Update</h3>
+          <ol id="rotationkey-list" class="keys"></ol>
+          <p class="note">
+            Der Eintrag an erster Stelle hat die höchste Priorität. Der
+            bestehende Schlüssel deines PDS bleibt erhalten – dein Account
+            funktioniert danach unverändert weiter.
+          </p>
+        </div>
+      </section>
+
+      <!-- Step 4: success -->
+      <section id="step-done" hidden>
+        <h2>3. Fertig</h2>
+        <p class="success">
+          Der neue Rotation Key wurde verifiziert als
+          <code>rotationKeys[0]</code> deiner DID.
+        </p>
+        <pre id="verify-json" class="mono"></pre>
+
+        <h3>Privaten Schlüssel jetzt sichern</h3>
+        <p class="warning">
+          Diese Datei existiert nur in deinem Browser und wird beim Schließen
+          des Tabs gelöscht. Sie ist dein Recovery-Schlüssel für die DID –
+          sicher aufbewahren, nicht in die Cloud legen.
+        </p>
+        <button id="download-key" type="button">Privaten Schlüssel herunterladen</button>
+        <p class="note">Danach kannst du den Tab schließen.</p>
+      </section>
+
+      <!-- did:web fallback -->
+      <section id="step-didweb" hidden>
+        <h2>DID <span class="mono" id="didweb-did"></span></h2>
+        <p>
+          Für <code>did:web</code>-Accounts gibt es keinen PDS-Signaturweg
+          (<code>signPlcOperation</code> funktioniert nur für
+          <code>did:plc</code>). Rotation erfolgt, indem du das von dir
+          gehostete <code>did.json</code> bearbeitest.
+        </p>
+        <p class="note">
+          Hier ist dein neues Schlüsselpaar. Trage den öffentlichen Teil in
+          dein <code>did.json</code> ein und hoste es neu:
+        </p>
+        <pre id="didweb-doc" class="mono"></pre>
+        <button id="download-didweb-key" type="button">
+          Schlüsselpaar herunterladen
+        </button>
+        <button id="download-didweb-doc" type="button">
+          did.json-Vorlage herunterladen
+        </button>
+      </section>
+
+      <div id="error-box" class="error" hidden></div>
+
+      <footer>
+        <p class="fineprint">
+          Läuft komplett in deinem Browser. Kein Backend, keine Analyse, keine
+          Speicherung: der private Schlüssel bleibt im Arbeitsspeicher, bis du
+          ihn herunterlädst. Während des OAuth-Logins liegt übergangsweise eine
+          Session in <code>sessionStorage</code> (mit DPoP-Key), die direkt nach
+          dem Token-Tausch wieder gelöscht wird.
+        </p>
+      </footer>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
