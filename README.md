@@ -73,6 +73,8 @@ Das Build-Skript schreibt `dist/client-metadata.json` mit passender
 | OAuth-Client (PAR/PKCE/DPoP, Token-Tausch) | `src/lib/oauth.ts` |
 | XRPC-Calls mit DPoP + Nonce-Retry | `src/lib/xrpc.ts` |
 | UI-Flow | `src/main.ts` |
+| URL-Overrides für Tests (`?pds=`, `?plc=`, `?resolver=`) | `src/lib/config.ts` |
+| Lokale Testumgebung (`@atproto/dev-env`) | `test/dev-env.mjs` |
 
 Requested Scope: `atproto identity:*` – `identity:*` ist zwingend, da
 `signPlcOperation`/`requestPlcOperationSignature` auf dem PDS die
@@ -80,7 +82,7 @@ Identity-Permission `*` verlangen (transitionale Scopes genügen nicht).
 
 ## Getestet (read-only / Dry-Run)
 
- Gegen die echten Endpoints wurde ausschließlich **lesend** getestet:
+Gegen die echten Endpoints wurde ausschließlich **lesend** getestet:
 
 - `com.atproto.identity.resolveHandle` (public.api.bsky.app)
 - DID-Dokumente + `plc.directory/<did>/data` (rotationKeys)
@@ -88,10 +90,47 @@ Identity-Permission `*` verlangen (transitionale Scopes genügen nicht).
   `/.well-known/oauth-authorization-server`)
 - PAR gegen `https://bsky.social/oauth/par` inkl. DPoP-Nonce-Handling
   (201 + `request_uri`; ohne Nutzer-Interaktion, ohne Account-Zugriff)
+- Browser-Durchlauf gegen bsky.social bis zur Login-Seite
 
-Nicht automatisiert testbar: der vollständige Login-Durchlauf inkl.
-`signPlcOperation`/`submitPlcOperation` – dafür ist ein echter Account und
-ein interaktiver Browser-Login nötig.
+**Vollständiger E2E-Durchlauf** (Login → Token → Keygen → Signatur → Submit)
+wurde gegen eine **lokale Testinstanz** gefahren (s. nächster Abschnitt) – der
+neue Rotation Key wurde dort verifiziert als `rotationKeys[0]` hinterlegt, der
+Download des privaten Schlüssels ebenfalls geprüft.
+
+## Gegen eine lokale Testinstanz testen (empfohlen)
+
+Es gibt eine offizielle, vollständig Offline-Testumgebung:
+[`@atproto/dev-env`](https://www.npmjs.com/package/@atproto/dev-env) bringt
+eigene PDS + PLC-Verzeichnis + OAuth-Provider mit. **Kein echter Account wird
+angefasst.**
+
+```bash
+npm install
+npm run test:dev-env        # startet PDS :2582 + PLC :2583, seedet Accounts
+npm run dev                 # zweites Terminal: App auf :5173
+```
+
+Danach die vom Skript ausgegebene URL öffnen:
+
+```
+http://127.0.0.1:5173/?resolver=http://127.0.0.1:2582&plc=http://127.0.0.1:2583
+```
+
+Login: `alice@test.com` / `alice-pass` (Handle `alice.test`). Der Mailversand
+ist in der Testumgebung deaktiviert – das Skript fängt das PLC-Operation-Token
+ab und druckt es in die Konsole. Danach normal weiter: Token eintragen →
+`signPlcOperation` → `submitPlcOperation` → Verifikationsseite + Download.
+
+Hinweise:
+
+- **Node ≥ 22** nötig (`@atproto/dev-env` hängt an aktuellen Node-APIs; unter
+  Node 20 crasht `undici`, und `better-sqlite3` muss für Node 22 neu gebaut
+  werden: `npm rebuild better-sqlite3`)
+- Keinen `pds=`-Parameter setzen: der PDS prüft den DPoP-`htu` gegen seine
+  eigene `publicUrl`; ein Host-Override (127.0.0.1 vs. localhost) bricht den
+  Flow mit `DPoP "htu" mismatch`
+- Die App-Overrides (`pds`, `plc`, `resolver`) sind reine
+  Entwicklungs-/Testhilfe; in Produktion werden sie nicht genutzt
 
 ## Lizenz
 

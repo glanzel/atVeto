@@ -8,9 +8,9 @@
  * ist die Zuordnung Handle ↔ DID vertrauenswürdig.
  */
 
-const RESOLVE_HANDLE =
-  'https://public.api.bsky.app/xrpc/com.atproto.identity.resolveHandle'
-const PLC_DIRECTORY = 'https://plc.directory'
+import { CONFIG, pdsUrlFor, resolverUrlFor } from './config'
+
+const RESOLVE_ENDPOINT = '/xrpc/com.atproto.identity.resolveHandle'
 
 export interface DidDocument {
   id: string
@@ -38,8 +38,9 @@ async function fetchJson(url: string): Promise<unknown> {
 }
 
 export async function resolveHandle(handle: string): Promise<string> {
+  const base = resolverUrlFor()
   const data = (await fetchJson(
-    `${RESOLVE_HANDLE}?handle=${encodeURIComponent(handle)}`,
+    `${base}${RESOLVE_ENDPOINT}?handle=${encodeURIComponent(handle)}`,
   )) as { did?: string }
   if (!data.did) throw new Error('Handle konnte nicht aufgelöst werden.')
   return data.did
@@ -47,7 +48,9 @@ export async function resolveHandle(handle: string): Promise<string> {
 
 export async function fetchDidDocument(did: string): Promise<DidDocument> {
   if (did.startsWith('did:plc:')) {
-    return (await fetchJson(`${PLC_DIRECTORY}/${encodeURIComponent(did)}`)) as DidDocument
+    return (await fetchJson(
+      `${CONFIG.plc}/${encodeURIComponent(did)}`,
+    )) as DidDocument
   }
   if (did.startsWith('did:web:')) {
     const host = did
@@ -97,7 +100,7 @@ export interface PlcOperationData {
 /** Aktuellen PLC-Zustand lesen (nur did:plc). */
 export async function fetchPlcData(did: string): Promise<PlcOperationData> {
   const data = (await fetchJson(
-    `${PLC_DIRECTORY}/${encodeURIComponent(did)}/data`,
+    `${CONFIG.plc}/${encodeURIComponent(did)}/data`,
   )) as PlcOperationData
   if (!Array.isArray(data.rotationKeys)) {
     throw new Error('PLC-Daten enthalten keine rotationKeys.')
@@ -118,6 +121,6 @@ export async function resolveIdentity(input: string): Promise<ResolvedIdentity> 
   }
   const doc = await fetchDidDocument(did)
   if (!isDid) assertHandleClaimed(doc, handle)
-  const pdsUrl = extractPdsUrl(doc)
+  const pdsUrl = pdsUrlFor(extractPdsUrl(doc))
   return { handle: handle || did, did, doc, pdsUrl, didKind: kind }
 }

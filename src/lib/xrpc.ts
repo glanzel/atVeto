@@ -78,16 +78,21 @@ export class PdsClient {
       if (nonce) this.nonce = nonce
 
       if (!res.ok) {
+        // DPoP-Nonce-Fehler kommt je nach Server als 400 oder 401,
+        // body.error oder WWW-Authenticate-Header.
         const needsNonce =
-          res.status === 400 &&
+          (res.status === 400 || res.status === 401) &&
           (() => {
             try {
-              return JSON.parse(text).error === 'use_dpop_nonce'
+              if (JSON.parse(text).error === 'use_dpop_nonce') return true
             } catch {
-              return /use_dpop_nonce/i.test(text) || res.headers
-                .get('WWW-Authenticate')
-                ?.includes('use_dpop_nonce') === true
+              // Rohtext / HTML
             }
+            return (
+              /use_dpop_nonce/i.test(text) ||
+              (res.headers.get('WWW-Authenticate')?.includes('use_dpop_nonce') ??
+                false)
+            )
           })()
         if (needsNonce && nonce && attempt < 2) {
           continue // Retry mit frischem Nonce

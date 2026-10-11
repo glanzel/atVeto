@@ -13,6 +13,7 @@ import {
   type TokenSet,
 } from './lib/oauth'
 import { PdsClient } from './lib/xrpc'
+import { applyOverrides } from './lib/config'
 import {
   generateRotationKey,
   keyBackupFile,
@@ -217,8 +218,13 @@ async function handleCallback(): Promise<boolean> {
   el.redirectStatus.textContent = 'Login wird abgeschlossen …'
   try {
     const tokens = await finishLogin(callback)
+    // URL-Overrides wieder einsetzen (der Callback hat keine Query-Parameter)
+    applyOverrides(tokens.overrides)
     state.tokens = tokens
     state.pds = new PdsClient(tokens)
+    // Identität nach dem Reload rekonstruieren: die DID ist per Token
+    // verifiziert (sub == session.did), also kann direkt neu aufgelöst werden.
+    state.identity = await resolveIdentity(tokens.did)
     await runPostLoginFlow()
     return true
   } catch (err) {

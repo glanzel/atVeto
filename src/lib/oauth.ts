@@ -17,9 +17,9 @@ import {
   importEs256Signer,
   randomB64u,
   sha256B64u,
-  b64uToBytes,
   bytesToB64u,
 } from './keys'
+import { CONFIG } from './config'
 
 const SESSION_STORAGE_KEY = 'atveto.oauth.session.v1'
 
@@ -49,6 +49,12 @@ export interface OAuthSessionState {
   clientId: string
   loginHint: string
   createdAt: number
+  /** URL-Overrides (Test gegen lokale Instanz) – überleben den Redirect */
+  overrides: {
+    pds?: string
+    plc?: string
+    resolver?: string
+  }
 }
 
 export interface TokenSet {
@@ -60,6 +66,15 @@ export interface TokenSet {
   expiresAt?: number
   dpopJwk: JsonWebKey
   pdsUrl: string
+  /** Account-Kontext aus der Authorization-Session (vor Seitenreload) */
+  handle: string
+  did: string
+  /** URL-Overrides (Test gegen lokale Instanz) */
+  overrides: {
+    pds?: string
+    plc?: string
+    resolver?: string
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -204,7 +219,9 @@ export async function startLogin(args: {
   }
 
   const verifier = randomB64u(32)
-  const challenge = await sha256B64u(b64uToBytes(verifier))
+  // PKCE S256: SHA-256 über den ASCII-STRING des Verifiers (RFC 7636),
+  // nicht über die dekodierten Bytes.
+  const challenge = await sha256B64u(`${verifier}`)
   const state = randomB64u(16)
 
   const keyPair = await crypto.subtle.generateKey(
@@ -226,6 +243,11 @@ export async function startLogin(args: {
     clientId,
     loginHint: args.handle || args.did,
     createdAt: Date.now(),
+    overrides: {
+      pds: CONFIG.pds,
+      plc: CONFIG.plc,
+      resolver: CONFIG.resolver,
+    },
   }
   sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session))
 
@@ -427,6 +449,9 @@ export async function finishLogin(callback: {
         : undefined,
     dpopJwk: session.dpopJwk,
     pdsUrl: session.pdsUrl,
+    handle: session.handle,
+    did: session.did,
+    overrides: session.overrides,
   }
   // Übergangs-State weg – ab jetzt lebt die Session nur im Speicher.
   clearSession()
