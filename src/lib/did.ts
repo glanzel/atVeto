@@ -8,7 +8,7 @@
  * ist die Zuordnung Handle ↔ DID vertrauenswürdig.
  */
 
-import { CONFIG, pdsUrlFor, resolverUrlFor } from './config'
+import { CONFIG, isTestHandle, pdsUrlFor, resolverUrlFor } from './config'
 
 const RESOLVE_ENDPOINT = '/xrpc/com.atproto.identity.resolveHandle'
 
@@ -113,7 +113,25 @@ export async function resolveIdentity(input: string): Promise<ResolvedIdentity> 
   const trimmed = input.trim()
   const isDid = /^did:(plc|web):.+/.test(trimmed)
   const handle = isDid ? '' : trimmed.replace(/^@/, '').toLowerCase()
-  const did = isDid ? trimmed : await resolveHandle(handle)
+
+  let did: string
+  try {
+    did = isDid ? trimmed : await resolveHandle(handle)
+  } catch (err) {
+    // Dev-env-Testhandles ohne Testparameter erkennen und hilfreich sein
+    if (!isDid && isTestHandle(handle) && !CONFIG.resolver && !CONFIG.pds) {
+      throw new Error(
+        `„${handle}" ist ein Test-Handle der lokalen dev-env-Instanz und ` +
+          'lässt sich nur mit den Testparametern auflösen.\n\n' +
+          'Lösung: die vollständige URL aus der Ausgabe von ' +
+          '„npm run test:dev-env" öffnen, z.B.\n' +
+          'http://127.0.0.1:5173/?resolver=http://127.0.0.1:2582&plc=http://127.0.0.1:2583\n\n' +
+          '(Der Login erscheint erst nach Klick auf „Weiter" – auf der Seite ' +
+          'des PDS, nicht in dieser App.)',
+      )
+    }
+    throw err
+  }
 
   const kind = didKindOf(did)
   if (kind === 'other') {

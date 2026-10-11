@@ -14,9 +14,33 @@
  */
 
 import { TestNetworkNoAppView } from '@atproto/dev-env'
+import { createConnection } from 'node:net'
 
 const PDS_PORT = 2582
 const PLC_PORT = 2583
+
+/** Prüfen, ob ein Port bereits belegt ist – sonst crasht dev-env mit EADDRINUSE. */
+async function assertPortFree(port, name) {
+  const inUse = await new Promise((resolve) => {
+    const socket = createConnection({ port, host: '127.0.0.1' })
+    socket.once('connect', () => {
+      socket.destroy()
+      resolve(true)
+    })
+    socket.once('error', () => resolve(false))
+  })
+  if (inUse) {
+    console.error(
+      `\n  FEHLER: Port ${port} (${name}) ist bereits belegt.\n` +
+        '  Vermutlich läuft schon eine dev-env-Instanz (oder vite dev).\n' +
+        '  Diese beenden, dann „npm run test:dev-env" erneut ausführen.\n',
+    )
+    process.exit(1)
+  }
+}
+
+await assertPortFree(PDS_PORT, 'PDS')
+await assertPortFree(PLC_PORT, 'PLC')
 
 const network = await TestNetworkNoAppView.create({
   pds: { port: PDS_PORT },
@@ -93,11 +117,11 @@ if (alice) {
   console.log(`  Rotation Keys:    ${await currentRotationKeys(alice.did)}`)
   console.log('')
   setInterval(async () => {
-    const keys = await currentRotationKeys(alice.did)
+    const keys = JSON.stringify(await currentRotationKeys(alice.did))
     if (keys !== lastKeys) {
       lastKeys = keys
       console.log('  Rotation Keys aktualisiert:')
-      keys.forEach((k, i) => console.log(`    [${i}] ${k}`))
+      JSON.parse(keys).forEach((k, i) => console.log(`    [${i}] ${k}`))
       console.log('')
     }
   }, 1500)

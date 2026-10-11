@@ -1,4 +1,5 @@
 import './styles.css'
+import { CONFIG } from './lib/config'
 import {
   fetchDidDocument,
   fetchPlcData,
@@ -389,7 +390,20 @@ el.downloadKey.addEventListener('click', () => {
 /* Boot                                                                */
 /* ------------------------------------------------------------------ */
 
+function showTestModeBanner(): void {
+  if (!CONFIG.pds && !CONFIG.resolver && CONFIG.plc === 'https://plc.directory') {
+    return
+  }
+  const banner = $('test-mode-banner')
+  banner.textContent =
+    'Testmodus aktiv: Auflösung/PLC zeigen auf eine lokale Instanz. ' +
+    'Der Login erscheint nach Klick auf „Weiter" auf der Seite des PDS – ' +
+    'nicht in dieser App.'
+  banner.hidden = false
+}
+
 async function boot(): Promise<void> {
+  showTestModeBanner()
   await handleCallback()
 }
 
