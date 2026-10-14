@@ -20,6 +20,13 @@ import {
   keyBackupFile,
   type RotationKeyPair,
 } from './lib/keys'
+import {
+  applyI18n,
+  getLang,
+  onLangChange,
+  setLang,
+  t,
+} from './lib/i18n'
 
 /* ------------------------------------------------------------------ */
 /* DOM-Helfer                                                          */
@@ -38,6 +45,8 @@ const el = {
   handleInput: $<HTMLInputElement>('handle-input'),
   handleSubmit: $<HTMLButtonElement>('handle-submit'),
   redirectStatus: $('redirect-status'),
+  langSwitch: $<HTMLButtonElement>('lang-switch'),
+  testBanner: $('test-mode-banner'),
   errorBox: $('error-box'),
   tokenRequestStatus: $('token-request-status'),
   tokenRequested: $('token-requested'),
@@ -91,6 +100,28 @@ function download(filename: string, content: string, type = 'application/json'):
 }
 
 /* ------------------------------------------------------------------ */
+/* Sprachumschalter                                                    */
+/* ------------------------------------------------------------------ */
+
+el.langSwitch.textContent = t('lang.switch')
+el.langSwitch.addEventListener('click', () => {
+  setLang(getLang() === 'de' ? 'en' : 'de')
+})
+onLangChange((lang) => {
+  applyI18n()
+  document.documentElement.lang = lang
+  el.langSwitch.textContent = t('lang.switch')
+  // sichtbare dynamische Texte nachrendern
+  if (!el.testBanner.hidden) showTestBanner()
+  if (!el.keyPreview.hidden) renderKeyPreview()
+  if (!el.tokenRequestStatus.hidden) {
+    el.tokenRequestStatus.querySelector('span:last-child')!.textContent = t(
+      'token.requesting',
+    )
+  }
+})
+
+/* ------------------------------------------------------------------ */
 /* App-Zustand (nur Speicher – nie persistiert)                         */
 /* ------------------------------------------------------------------ */
 
@@ -123,7 +154,7 @@ el.handleForm.addEventListener('submit', async (event) => {
   if (!input) return
 
   el.handleSubmit.disabled = true
-  el.redirectStatus.textContent = 'Handle wird aufgelöst …'
+  el.redirectStatus.textContent = t('redirect.resolving')
   show(el.stepRedirect)
   try {
     const identity = await resolveIdentity(input)
@@ -134,8 +165,7 @@ el.handleForm.addEventListener('submit', async (event) => {
       return
     }
 
-    el.redirectStatus.textContent =
-      `Weiterleitung zum Login bei ${new URL(identity.pdsUrl).host} …`
+    el.redirectStatus.textContent = t('redirect.login')
     // OAuth-Redirect passiert hier; nach Rückkehr landen wir im Callback-Zweig.
     await startLogin({
       handle: identity.handle,
@@ -187,11 +217,7 @@ async function startDidWebFlow(identity: ResolvedIdentity): Promise<void> {
       keyBackupFile(rotationKey, { did: identity.did, handle: identity.handle }),
     )
   el.downloadDidwebDoc.onclick = () =>
-    download(
-      'did.json',
-      JSON.stringify(proposed, null, 2),
-      'application/did+json',
-    )
+    download('did.json', JSON.stringify(proposed, null, 2), 'application/did+json')
   show(el.stepDidWeb)
 }
 
@@ -216,7 +242,7 @@ async function handleCallback(): Promise<boolean> {
 
   clearUrl()
   show(el.stepRedirect)
-  el.redirectStatus.textContent = 'Login wird abgeschlossen …'
+  el.redirectStatus.textContent = t('redirect.finishing')
   try {
     const tokens = await finishLogin(callback)
     // URL-Overrides wieder einsetzen (der Callback hat keine Query-Parameter)
@@ -272,8 +298,9 @@ async function runPostLoginFlow(): Promise<void> {
 }
 
 async function requestTokenWithUi(): Promise<void> {
-  el.tokenRequestStatus.querySelector('span:last-child')!.textContent =
-    'Token wird per E-Mail angefordert …'
+  el.tokenRequestStatus.querySelector('span:last-child')!.textContent = t(
+    'token.requesting',
+  )
   await state.pds!.requestEmailToken()
   state.tokenRequestedAt = new Date().toISOString()
 }
@@ -305,7 +332,7 @@ function renderKeyPreview(): void {
     if (entry.isNew) li.classList.add('new')
     const tag = document.createElement('span')
     tag.className = 'tag'
-    tag.textContent = entry.isNew ? 'neu · höchste Priorität' : 'aktuell'
+    tag.textContent = t(entry.isNew ? 'key.new' : 'key.current')
     const text = document.createElement('span')
     text.textContent = entry.value
     li.append(tag, text)
@@ -324,7 +351,7 @@ el.tokenForm.addEventListener('submit', async (event) => {
   if (!token || !state.pds || !state.rotationKey || !state.plc) return
 
   el.tokenSubmit.disabled = true
-  el.tokenSubmit.textContent = 'Wird hinterlegt …'
+  el.tokenSubmit.textContent = t('token.submitting')
   try {
     const rotationKeys = [
       state.rotationKey.didKey,
@@ -337,20 +364,24 @@ el.tokenForm.addEventListener('submit', async (event) => {
       operation: unknown
     }
     if (!signed?.operation) {
-      throw new Error('PDS hat keine signierte Operation zurückgegeben.')
+      throw new Error(
+        getLang() === 'de'
+          ? 'PDS hat keine signierte Operation zurückgegeben.'
+          : 'PDS did not return a signed operation.',
+      )
     }
 
     // 2. Operation beim PLC-Verzeichnis einreichen.
     await state.pds.submitPlcOperation(signed.operation)
 
-    // 3. Verifikation: frisch aus plc.directory lesen.
+    // 3. Verifikation: frisch aus dem PLC-Verzeichnis lesen.
     const updated = await fetchPlcData(state.identity!.did)
     renderDone(updated)
   } catch (err) {
     showError(err)
   } finally {
     el.tokenSubmit.disabled = false
-    el.tokenSubmit.textContent = 'Rotation Key hinterlegen'
+    el.tokenSubmit.textContent = t('token.submit')
   }
 })
 
@@ -358,8 +389,11 @@ function renderDone(updated: PlcOperationData): void {
   const first = updated.rotationKeys[0]
   if (first !== state.rotationKey!.didKey) {
     showError(
-      'Der neue Schlüssel ist nicht an erster Stelle der rotationKeys gelandet – ' +
-        `erster Eintrag ist ${first}.`,
+      getLang() === 'de'
+        ? 'Der neue Schlüssel ist nicht an erster Stelle der rotationKeys gelandet – ' +
+            `erster Eintrag ist ${first}.`
+        : 'The new key did not end up as the first rotation key – ' +
+            `first entry is ${first}.`,
     )
     show(el.stepToken)
     return
@@ -390,20 +424,18 @@ el.downloadKey.addEventListener('click', () => {
 /* Boot                                                                */
 /* ------------------------------------------------------------------ */
 
-function showTestModeBanner(): void {
+function showTestBanner(): void {
   if (!CONFIG.pds && !CONFIG.resolver && CONFIG.plc === 'https://plc.directory') {
     return
   }
-  const banner = $('test-mode-banner')
-  banner.textContent =
-    'Testmodus aktiv: Auflösung/PLC zeigen auf eine lokale Instanz. ' +
-    'Der Login erscheint nach Klick auf „Weiter" auf der Seite des PDS – ' +
-    'nicht in dieser App.'
-  banner.hidden = false
+  el.testBanner.textContent = t('test.banner')
+  el.testBanner.hidden = false
 }
 
 async function boot(): Promise<void> {
-  showTestModeBanner()
+  applyI18n()
+  document.documentElement.lang = getLang()
+  showTestBanner()
   await handleCallback()
 }
 

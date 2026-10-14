@@ -119,7 +119,14 @@ export async function resolveIdentity(input: string): Promise<ResolvedIdentity> 
     did = isDid ? trimmed : await resolveHandle(handle)
   } catch (err) {
     // Dev-env-Testhandles ohne Testparameter erkennen und hilfreich sein
-    if (!isDid && isTestHandle(handle) && !CONFIG.resolver && !CONFIG.pds) {
+    // (Hinweis nur im Dev-Modus – die Parameter gibt es im Build nicht)
+    if (
+      import.meta.env.DEV &&
+      !isDid &&
+      isTestHandle(handle) &&
+      !CONFIG.resolver &&
+      !CONFIG.pds
+    ) {
       throw new Error(
         `„${handle}" ist ein Test-Handle der lokalen dev-env-Instanz und ` +
           'lässt sich nur mit den Testparametern auflösen.\n\n' +

@@ -1,22 +1,22 @@
 /**
- * Laufzeit-Overrides per URL-Parameter – nur für Tests gegen eine
- * lokale Instanz von @atproto/dev-env nötig:
+ * Laufzeit-Konfiguration.
  *
- *   http://127.0.0.1:5173/?pds=http://127.0.0.1:2582&plc=http://127.0.0.1:2583
+ * URL-Parameter (`?pds=`, `?plc=`, `?resolver=`) sind NUR im Dev-Modus
+ * (`npm run dev`) aktiv. In Produktions-Builds ersetzt Vite
+ * `import.meta.env.DEV` durch `false` – der Lesezweig fällt dann dem
+ * Minifier zum Opfer. Die veröffentlichte App folgt damit ausschließlich
+ * dem Account (PDS-Adresse aus dem DID-Dokument) und lässt sich durch
+ * URL-Parameter nicht verbiegen.
  *
- *   pds      – PDS-Adresse (XRPC + OAuth). OHNE Angabe: PDS aus dem DID-Dokument.
- *              Vorsicht: Der Server prüft den DPoP-"htu" gegen seine eigene
- *              publicUrl – ein Host-Override (z.B. 127.0.0.1 statt localhost)
- *              bricht den Flow mit "DPoP htu mismatch". Nur setzen, wenn es
- *              wirklich nötig ist.
- *   plc      – PLC-Verzeichnis-Basis-URL. Default: https://plc.directory
- *   resolver – Handle-Resolver-Basis-URL. Default: public.api.bsky.app
- *              (dev-env: der PDS selbst löst .test/.example-Handles auf)
- *
- * Ohne Parameter verhält sich die App genau wie in Produktion.
+ * Warum es die Parameter überhaupt gibt: zum Testen gegen eine lokale
+ * @atproto/dev-env-Instanz, deren Handles (alice.test) der öffentliche
+ * Resolver nicht kennt und deren PLC-Verzeichnis lokal läuft.
  */
 
-const params = new URLSearchParams(location.search)
+const isDev = import.meta.env.DEV
+const params = isDev
+  ? new URLSearchParams(location.search)
+  : new URLSearchParams()
 
 function cleanUrl(value: string | null): string | undefined {
   if (!value) return undefined
@@ -27,22 +27,6 @@ export const CONFIG = {
   pds: cleanUrl(params.get('pds')),
   plc: cleanUrl(params.get('plc')) ?? 'https://plc.directory',
   resolver: cleanUrl(params.get('resolver')),
-}
-
-/**
- * Overrides zur Laufzeit setzen – nötig, weil der OAuth-Callback auf
- * `/?code=…` landet und die ursprünglichen Query-Parameter (pds/plc/resolver)
- * dabei verloren gehen. Die Werte wandern daher beim Login-Start in die
- * OAuth-Session und werden nach dem Token-Tausch wieder eingesetzt.
- */
-export function applyOverrides(overrides: {
-  pds?: string
-  plc?: string
-  resolver?: string
-}): void {
-  if (overrides.pds !== undefined) CONFIG.pds = cleanUrl(overrides.pds)
-  if (overrides.plc !== undefined) CONFIG.plc = cleanUrl(overrides.plc) ?? CONFIG.plc
-  if (overrides.resolver !== undefined) CONFIG.resolver = cleanUrl(overrides.resolver)
 }
 
 /** Handles der lokalen Testinstanz ([.test]/[.example]) */
@@ -60,4 +44,20 @@ export function resolverUrlFor(): string {
   if (CONFIG.resolver) return CONFIG.resolver
   if (CONFIG.pds) return CONFIG.pds
   return 'https://public.api.bsky.app'
+}
+
+/**
+ * Overrides zur Laufzeit setzen – nötig, weil der OAuth-Callback auf
+ * `/?code=…` landet und die ursprünglichen Query-Parameter (pds/plc/resolver)
+ * dabei verloren gehen. Die Werte wandern daher beim Login-Start in die
+ * OAuth-Session und werden nach dem Token-Tausch wieder eingesetzt.
+ */
+export function applyOverrides(overrides: {
+  pds?: string
+  plc?: string
+  resolver?: string
+}): void {
+  if (overrides.pds !== undefined) CONFIG.pds = cleanUrl(overrides.pds)
+  if (overrides.plc !== undefined) CONFIG.plc = cleanUrl(overrides.plc) ?? CONFIG.plc
+  if (overrides.resolver !== undefined) CONFIG.resolver = cleanUrl(overrides.resolver)
 }
