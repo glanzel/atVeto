@@ -134,4 +134,5 @@ Hinweise:
 
 ## Lizenz
 
-MIT (siehe `LICENSE`)
+GPL-3.0 (siehe `LICENSE`) — der Code ist öffentlich einsehbar, was bei einer
+Client-seitigen Anwendung ohnehin der Fall ist.
