@@ -12,11 +12,32 @@
   <body>
     <main id="app">
       <div class="topbar">
-        <button id="lang-switch" class="link" type="button">English</button>
+        <div class="lang-switch" role="group" aria-label="Sprache / Language">
+          <button type="button" data-lang="de" class="lang">DE</button>
+          <span class="lang-sep">/</span>
+          <button type="button" data-lang="en" class="lang">EN</button>
+        </div>
       </div>
 
       <h1>atVeto</h1>
       <p class="tagline" data-i18n="tagline"></p>
+
+      <details class="about">
+        <summary>
+          <span class="info-icon" aria-hidden="true">i</span>
+          <span data-i18n="about.summary"></span>
+        </summary>
+        <div class="about-body">
+          <p data-i18n="about.p1"></p>
+          <ul>
+            <li data-i18n="about.li1"></li>
+            <li data-i18n="about.li2"></li>
+            <li data-i18n="about.li3"></li>
+            <li data-i18n="about.li4"></li>
+          </ul>
+          <p data-i18n="about.p2"></p>
+        </div>
+      </details>
 
       <!-- Step 1: Handle -->
       <section id="step-handle">

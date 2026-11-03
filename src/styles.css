@@ -75,6 +75,105 @@ h3 {
   margin-top: 0;
 }
 
+/* Sprachumschalter oben rechts */
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.lang-switch .lang {
+  background: none;
+  border: none;
+  padding: 0.15rem 0.35rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.lang-switch .lang.active {
+  color: var(--fg);
+  background: var(--card);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.lang-sep {
+  color: var(--border);
+}
+
+/* Ausklappbare Erklärung hinter einem Info-Zeichen */
+.about {
+  margin: 0.9rem 0 1.2rem;
+  font-size: 0.9rem;
+}
+
+.about summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  color: var(--accent);
+  list-style: none;
+  font-weight: 500;
+  user-select: none;
+}
+
+.about summary::-webkit-details-marker {
+  display: none;
+}
+
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+  flex: none;
+}
+
+.about-body {
+  margin-top: 0.7rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--fg);
+}
+
+.about-body p {
+  margin: 0 0 0.6rem;
+}
+
+.about-body p:last-child {
+  margin-bottom: 0;
+}
+
+.about-body ul {
+  margin: 0 0 0.6rem;
+  padding-left: 1.2rem;
+}
+
+.about-body li {
+  margin-bottom: 0.35rem;
+}
+
 code,
 .mono,
 pre {

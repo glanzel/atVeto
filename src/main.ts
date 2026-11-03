@@ -45,7 +45,9 @@ const el = {
   handleInput: $<HTMLInputElement>('handle-input'),
   handleSubmit: $<HTMLButtonElement>('handle-submit'),
   redirectStatus: $('redirect-status'),
-  langSwitch: $<HTMLButtonElement>('lang-switch'),
+  langButtons: Array.from(
+    document.querySelectorAll<HTMLButtonElement>('[data-lang]'),
+  ),
   testBanner: $('test-mode-banner'),
   errorBox: $('error-box'),
   tokenRequestStatus: $('token-request-status'),
@@ -103,14 +105,25 @@ function download(filename: string, content: string, type = 'application/json'):
 /* Sprachumschalter                                                    */
 /* ------------------------------------------------------------------ */
 
-el.langSwitch.textContent = t('lang.switch')
-el.langSwitch.addEventListener('click', () => {
-  setLang(getLang() === 'de' ? 'en' : 'de')
-})
+function markActiveLang(): void {
+  for (const button of el.langButtons) {
+    const isActive = button.dataset.lang === getLang()
+    button.classList.toggle('active', isActive)
+    button.setAttribute('aria-pressed', String(isActive))
+  }
+}
+
+for (const button of el.langButtons) {
+  button.addEventListener('click', () => {
+    const lang = button.dataset.lang
+    if (lang === 'de' || lang === 'en') setLang(lang)
+  })
+}
+
 onLangChange((lang) => {
   applyI18n()
   document.documentElement.lang = lang
-  el.langSwitch.textContent = t('lang.switch')
+  markActiveLang()
   // sichtbare dynamische Texte nachrendern
   if (!el.testBanner.hidden) showTestBanner()
   if (!el.keyPreview.hidden) renderKeyPreview()
@@ -435,6 +448,7 @@ function showTestBanner(): void {
 async function boot(): Promise<void> {
   applyI18n()
   document.documentElement.lang = getLang()
+  markActiveLang()
   showTestBanner()
   await handleCallback()
 }

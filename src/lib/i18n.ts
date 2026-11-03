@@ -11,15 +11,31 @@ export type Lang = 'de' | 'en'
 
 const STRINGS = {
   de: {
-    'lang.switch': 'English',
-    'lang.label': 'Sprache',
-
-    'title': 'atVeto – zweiter Rotation Key für deine did:plc',
+    'title': 'atVeto – dein eigener Recovery Key für dein Bluesky-Konto',
     'tagline':
-      'Ein zweiter Rotation Key für deine did:plc – erzeugt und gespeichert nur in deinem Browser, hinterlegt mit höchster Priorität über dein PDS.',
+      'Erzeuge deinen eigenen Recovery Key – damit du den Schlüssel zu deinem Konto in der Hand hältst.',
+
+    'about.summary': 'Was ist ein Recovery Key?',
+    'about.p1':
+      'Deine ATProto-Identität (did:plc) wird von „Rotation Keys“ kontrolliert. Mit ihnen lassen sich ' +
+      'Schlüssel und Dienste deiner Identität ändern – und im Notfall wiederherstellen.',
+    'about.li1':
+      'Bei bsky.social verwaltet dein PDS diese Schlüssel und nutzt dieselben für alle Accounts. ' +
+      'Du selbst hältst keinen.',
+    'about.li2':
+      'atVeto erzeugt einen eigenen Schlüssel und hinterlegt ihn mit höchster Priorität in deiner DID.',
+    'about.li3':
+      'Am Ende bekommst du den privaten Schlüssel als Datei – damit kannst du deine Identität auch dann ' +
+      'wiederherstellen, wenn dein PDS verschwindet oder gesperrt wird.',
+    'about.li4':
+      'Dein PDS behält seine Schlüssel: Dein Account funktioniert unverändert weiter.',
+    'about.p2':
+      'Wichtig: Der Schlüssel ist kein Passwort und kein Login. Bewahre die heruntergeladene Datei sicher auf – ' +
+      'wer sie hat, kann deine Identität kontrollieren. atVeto läuft in deinem Browser, speichert nichts und ' +
+      'spricht nur mit deinem PDS und den öffentlichen Verzeichnisdiensten.',
 
     'handle.label': 'Dein Bluesky-Handle',
-    'handle.submit': 'Weiter',
+    'handle.submit': 'Key erstellen',
 
     'test.banner':
       'Testmodus (nur in der Entwicklung aktiv): Auflösung/PLC zeigen auf eine lokale Instanz. ' +
@@ -73,16 +89,31 @@ const STRINGS = {
     'footer.source': 'Quellcode',
   },
   en: {
-    'lang.switch': 'Deutsch',
-    'lang.label': 'Language',
-
-    'title': 'atVeto – a second rotation key for your did:plc',
+    'title': 'atVeto – your own recovery key for your Bluesky account',
     'tagline':
-      'A second rotation key for your did:plc – generated and stored only in your browser, ' +
-      'registered with highest priority through your PDS.',
+      'Create your own recovery key – so you hold the key to your account.',
+
+    'about.summary': 'What is a recovery key?',
+    'about.p1':
+      'Your ATProto identity (did:plc) is controlled by “rotation keys”. They can change the keys and ' +
+      'services of your identity – and restore it in an emergency.',
+    'about.li1':
+      'On bsky.social your PDS manages these keys and uses the same ones for all accounts. ' +
+      'You do not hold one yourself.',
+    'about.li2':
+      'atVeto generates your own key and registers it with the highest priority in your DID.',
+    'about.li3':
+      'At the end you receive the private key as a file – so you can restore your identity even if your ' +
+      'PDS disappears or gets locked.',
+    'about.li4':
+      'Your PDS keeps its keys: your account keeps working unchanged.',
+    'about.p2':
+      'Important: this key is not a password and not a login. Store the downloaded file safely – whoever ' +
+      'has it can control your identity. atVeto runs in your browser, stores nothing and only talks to ' +
+      'your PDS and the public directory services.',
 
     'handle.label': 'Your Bluesky handle',
-    'handle.submit': 'Continue',
+    'handle.submit': 'Create key',
 
     'test.banner':
       'Test mode (development only): resolution/PLC point to a local instance. ' +
