@@ -11,16 +11,15 @@
   </head>
   <body>
     <main id="app">
-      <div class="topbar">
-        <a class="back-link" href="./verify.html" data-i18n="nav.verify"></a>
+      <header class="site-header">
+        <h1>atVeto</h1>
         <div class="lang-switch" role="group" aria-label="Sprache / Language">
           <button type="button" data-lang="de" class="lang">DE</button>
           <span class="lang-sep">/</span>
           <button type="button" data-lang="en" class="lang">EN</button>
         </div>
-      </div>
+      </header>
 
-      <h1>atVeto</h1>
       <p class="tagline" data-i18n="tagline"></p>
 
       <details class="about">
@@ -79,10 +78,14 @@
         </h3>
         <ol id="check-key-list" class="keys"></ol>
         <p class="note" data-i18n="check.keysNote"></p>
+        <p id="check-assessment" class="assessment"></p>
         <div class="row">
           <button id="check-continue" type="button" data-i18n="check.continue"></button>
-          <button id="check-cancel" type="button" class="secondary" data-i18n="check.cancel"></button>
+          <button id="check-verify" type="button" class="secondary" data-i18n="check.verify"></button>
         </div>
+        <p class="note">
+          <button id="check-cancel" class="link" type="button" data-i18n="check.cancel"></button>
+        </p>
         <p class="note" data-i18n="check.loginHint"></p>
       </section>
 

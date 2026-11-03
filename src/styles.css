@@ -75,13 +75,20 @@ h3 {
   margin-top: 0;
 }
 
-/* Sprachumschalter oben rechts */
-.topbar {
+/* Kopfzeile: Titel und Sprachumschalter in einer Zeile, oben bündig */
+.site-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
-  margin-bottom: 0.5rem;
+}
+
+.site-header h1 {
+  margin: 0;
+}
+
+.back-row {
+  margin: 0 0 0.4rem;
 }
 
 .back-link {
@@ -366,6 +373,24 @@ button.link {
   background: var(--muted);
   text-transform: none;
   font-weight: 600;
+}
+
+/* Einschätzung im Check-Schritt */
+.assessment {
+  margin: 0.6rem 0 1rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 8px;
+  background: var(--card);
+  border-left: 3px solid var(--muted);
+  font-size: 0.9rem;
+}
+
+.assessment-none {
+  border-left-color: var(--warning-fg);
+}
+
+.assessment-has {
+  border-left-color: var(--success);
 }
 
 /* Account-Info (Check-Schritt) */

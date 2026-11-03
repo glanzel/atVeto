@@ -169,6 +169,12 @@ function boot(): void {
   applyI18n()
   document.documentElement.lang = getLang()
   markActiveLang()
+
+  // Von der Account-Prüfung übergebene DID/Handle vorbelegen
+  const params = new URLSearchParams(location.search)
+  const did = params.get('did') ?? params.get('handle')
+  if (did && !el.didInput.value) el.didInput.value = did
+  el.keyInput.focus()
 }
 
 boot()

@@ -46,6 +46,11 @@ const STRINGS = {
       '(P-256) ist typischerweise ein eigener Recovery-Key – zum Beispiel aus einem Umzug zu ' +
       'Eurosky oder einem anderen Tool.',
     'check.continue': 'Schlüssel erstellen',
+    'check.verify': 'Eigenen Schlüssel prüfen',
+    'check.assessmentNone':
+      'Du hast vermutlich keinen eigenen Schlüssel – die vorhandenen gehören deinem PDS.',
+    'check.assessmentHas':
+      'Du besitzt vermutlich bereits einen eigenen Schlüssel (P-256, z. B. aus einem Umzug).',
     'check.cancel': 'Abbrechen',
     'check.loginHint':
       'Der Login erfolgt auf der Seite deines PDS – atVeto sieht deine Zugangsdaten nie.',
@@ -176,6 +181,11 @@ const STRINGS = {
       'zQ3s… keys (secp256k1) are typically your PDS’s keys. A zDn… key (P-256) is typically ' +
       'your own recovery key – e.g. from migrating to Eurosky or another tool.',
     'check.continue': 'Create key',
+    'check.verify': 'Verify an existing key',
+    'check.assessmentNone':
+      'You probably do not have your own key – the existing ones belong to your PDS.',
+    'check.assessmentHas':
+      'You probably already own a key of your own (P-256, e.g. from a migration).',
     'check.cancel': 'Cancel',
     'check.loginHint':
       'Login happens on your PDS page – atVeto never sees your credentials.',

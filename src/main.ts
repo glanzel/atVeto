@@ -47,7 +47,9 @@ const el = {
   checkPds: $('check-pds'),
   checkKeyCount: $('check-key-count'),
   checkKeyList: $<HTMLOListElement>('check-key-list'),
+  checkAssessment: $('check-assessment'),
   checkContinue: $<HTMLButtonElement>('check-continue'),
+  checkVerify: $<HTMLButtonElement>('check-verify'),
   checkCancel: $<HTMLButtonElement>('check-cancel'),
   handleForm: $<HTMLFormElement>('handle-form'),
   handleInput: $<HTMLInputElement>('handle-input'),
@@ -224,7 +226,28 @@ function renderCheck(identity: ResolvedIdentity, plc: PlcOperationData): void {
     li.append(tag, text)
     el.checkKeyList.append(li)
   }
+
+  // Einschätzung: Eigene Keys (atVeto, Eurosky-Migration) sind P-256 (zDn…),
+  // PDS-Keys bei bsky.social/Eurosky sind secp256k1 (zQ3s…). Die Anzahl allein
+  // wäre irreführend (ein PDS kann mehrere eigene Keys haben).
+  const hasOwnKey = plc.rotationKeys.some((k) => k.startsWith('did:key:zDn'))
+  el.checkAssessment.textContent = hasOwnKey
+    ? t('check.assessmentHas')
+    : t('check.assessmentNone')
+  el.checkAssessment.className = hasOwnKey
+    ? 'assessment assessment-has'
+    : 'assessment assessment-none'
 }
+
+el.checkVerify.addEventListener('click', () => {
+  const identity = state.identity
+  if (!identity) return
+  const params = new URLSearchParams({
+    did: identity.did,
+    handle: identity.handle,
+  })
+  location.href = `./verify.html?${params.toString()}`
+})
 
 el.checkCancel.addEventListener('click', () => {
   clearError()
