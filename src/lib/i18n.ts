@@ -37,6 +37,19 @@ const STRINGS = {
     'handle.label': 'Dein Bluesky-Handle',
     'handle.submit': 'Key erstellen',
 
+    'check.title': 'Dein Account',
+    'check.did': 'DID',
+    'check.pds': 'PDS',
+    'check.keys': 'Aktuelle Rotation Keys',
+    'check.keysNote':
+      'zQ3s…-Keys (secp256k1) sind typischerweise die Schlüssel deines PDS. Ein zDn…-Key ' +
+      '(P-256) ist typischerweise ein eigener Recovery-Key – zum Beispiel aus einem Umzug zu ' +
+      'Eurosky oder einem anderen Tool.',
+    'check.continue': 'Weiter mit Login',
+    'check.cancel': 'Abbrechen',
+    'check.loginHint':
+      'Der Login erfolgt auf der Seite deines PDS – atVeto sieht deine Zugangsdaten nie.',
+
     'test.banner':
       'Testmodus (nur in der Entwicklung aktiv): Auflösung/PLC zeigen auf eine lokale Instanz. ' +
       'Der Login erscheint nach Klick auf „Weiter“ auf der Seite des PDS – nicht in dieser App.',
@@ -114,6 +127,18 @@ const STRINGS = {
 
     'handle.label': 'Your Bluesky handle',
     'handle.submit': 'Create key',
+
+    'check.title': 'Your account',
+    'check.did': 'DID',
+    'check.pds': 'PDS',
+    'check.keys': 'Current rotation keys',
+    'check.keysNote':
+      'zQ3s… keys (secp256k1) are typically your PDS’s keys. A zDn… key (P-256) is typically ' +
+      'your own recovery key – e.g. from migrating to Eurosky or another tool.',
+    'check.continue': 'Continue with login',
+    'check.cancel': 'Cancel',
+    'check.loginHint':
+      'Login happens on your PDS page – atVeto never sees your credentials.',
 
     'test.banner':
       'Test mode (development only): resolution/PLC point to a local instance. ' +

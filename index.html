@@ -58,6 +58,30 @@
         </form>
       </section>
 
+      <!-- Check: account + current keys (public data, no login) -->
+      <section id="step-check" hidden>
+        <h2 data-i18n="check.title"></h2>
+        <dl class="account-info">
+          <dt data-i18n="handle.label"></dt>
+          <dd id="check-handle" class="mono"></dd>
+          <dt data-i18n="check.did"></dt>
+          <dd id="check-did" class="mono"></dd>
+          <dt data-i18n="check.pds"></dt>
+          <dd id="check-pds" class="mono"></dd>
+        </dl>
+        <h3>
+          <span data-i18n="check.keys"></span>
+          <span id="check-key-count" class="note"></span>
+        </h3>
+        <ol id="check-key-list" class="keys"></ol>
+        <p class="note" data-i18n="check.keysNote"></p>
+        <div class="row">
+          <button id="check-continue" type="button" data-i18n="check.continue"></button>
+          <button id="check-cancel" type="button" class="secondary" data-i18n="check.cancel"></button>
+        </div>
+        <p class="note" data-i18n="check.loginHint"></p>
+      </section>
+
       <!-- Step 2: OAuth redirect notice -->
       <section id="step-redirect" hidden>
         <div class="status">

@@ -37,10 +37,18 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T =>
 
 const el = {
   stepHandle: $('step-handle'),
+  stepCheck: $('step-check'),
   stepRedirect: $('step-redirect'),
   stepToken: $('step-token'),
   stepDone: $('step-done'),
   stepDidWeb: $('step-didweb'),
+  checkHandle: $('check-handle'),
+  checkDid: $('check-did'),
+  checkPds: $('check-pds'),
+  checkKeyCount: $('check-key-count'),
+  checkKeyList: $<HTMLOListElement>('check-key-list'),
+  checkContinue: $<HTMLButtonElement>('check-continue'),
+  checkCancel: $<HTMLButtonElement>('check-cancel'),
   handleForm: $<HTMLFormElement>('handle-form'),
   handleInput: $<HTMLInputElement>('handle-input'),
   handleSubmit: $<HTMLButtonElement>('handle-submit'),
@@ -70,6 +78,7 @@ const el = {
 function show(...sections: HTMLElement[]): void {
   for (const s of [
     el.stepHandle,
+    el.stepCheck,
     el.stepRedirect,
     el.stepToken,
     el.stepDone,
@@ -178,7 +187,57 @@ el.handleForm.addEventListener('submit', async (event) => {
       return
     }
 
-    el.redirectStatus.textContent = t('redirect.login')
+    // Vor dem Login: öffentliche Daten zeigen (DID, PDS, vorhandene Keys),
+    // damit man bewusst entscheiden kann, ob ein weiterer Key gewünscht ist.
+    const plc = await fetchPlcData(identity.did)
+    state.plc = plc
+    renderCheck(identity, plc)
+    show(el.stepCheck)
+  } catch (err) {
+    showError(err)
+    show(el.stepHandle)
+  } finally {
+    el.handleSubmit.disabled = false
+  }
+})
+
+function renderCheck(identity: ResolvedIdentity, plc: PlcOperationData): void {
+  el.checkHandle.textContent = identity.handle
+  el.checkDid.textContent = identity.did
+  el.checkPds.textContent = identity.pdsUrl
+  el.checkKeyCount.textContent = `(${plc.rotationKeys.length})`
+
+  el.checkKeyList.replaceChildren()
+  for (const value of plc.rotationKeys) {
+    const li = document.createElement('li')
+    li.className = 'plain'
+    const tag = document.createElement('span')
+    tag.className = 'tag'
+    tag.textContent = value.startsWith('did:key:zDn')
+      ? 'P-256'
+      : value.startsWith('did:key:zQ3s')
+        ? 'secp256k1'
+        : '?'
+    const text = document.createElement('span')
+    text.textContent = value
+    li.append(tag, text)
+    el.checkKeyList.append(li)
+  }
+}
+
+el.checkCancel.addEventListener('click', () => {
+  clearError()
+  show(el.stepHandle)
+})
+
+el.checkContinue.addEventListener('click', async () => {
+  const identity = state.identity
+  if (!identity) return
+  clearError()
+  el.checkContinue.disabled = true
+  el.redirectStatus.textContent = t('redirect.login')
+  show(el.stepRedirect)
+  try {
     // OAuth-Redirect passiert hier; nach Rückkehr landen wir im Callback-Zweig.
     await startLogin({
       handle: identity.handle,
@@ -187,9 +246,9 @@ el.handleForm.addEventListener('submit', async (event) => {
     })
   } catch (err) {
     showError(err)
-    show(el.stepHandle)
+    show(el.stepCheck)
   } finally {
-    el.handleSubmit.disabled = false
+    el.checkContinue.disabled = false
   }
 })
 

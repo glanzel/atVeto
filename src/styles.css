@@ -306,6 +306,37 @@ button.link {
   letter-spacing: 0.04em;
 }
 
+.keys li.plain .tag {
+  background: var(--muted);
+  text-transform: none;
+  font-weight: 600;
+}
+
+/* Account-Info (Check-Schritt) */
+.account-info {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0.8rem 0 1.2rem;
+  font-size: 0.9rem;
+}
+
+.account-info dt {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.account-info dd {
+  margin: 0;
+  word-break: break-all;
+}
+
+button.secondary {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+
 .keys li.current .tag {
   background: var(--muted);
 }
