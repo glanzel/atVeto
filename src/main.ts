@@ -17,7 +17,7 @@ import { PdsClient } from './lib/xrpc'
 import { applyOverrides } from './lib/config'
 import {
   generateRotationKey,
-  keyBackupFile,
+  keyBackupText,
   type RotationKeyPair,
 } from './lib/keys'
 import {
@@ -69,6 +69,7 @@ const el = {
   rotationKeyList: $<HTMLOListElement>('rotationkey-list'),
   verifyJson: $('verify-json'),
   downloadKey: $<HTMLButtonElement>('download-key'),
+  copyKey: $<HTMLButtonElement>('copy-key'),
   didwebDid: $('didweb-did'),
   didwebDoc: $('didweb-doc'),
   downloadDidwebKey: $<HTMLButtonElement>('download-didweb-key'),
@@ -285,8 +286,9 @@ async function startDidWebFlow(identity: ResolvedIdentity): Promise<void> {
   el.didwebDoc.textContent = JSON.stringify(proposed, null, 2)
   el.downloadDidwebKey.onclick = () =>
     download(
-      `atveto-rotation-key-${identity.handle || identity.did}.json`,
-      keyBackupFile(rotationKey, { did: identity.did, handle: identity.handle }),
+      `atveto-recovery-key-${identity.handle || identity.did}.txt`,
+      keyBackupText(rotationKey, { did: identity.did, handle: identity.handle }),
+      'text/plain',
     )
   el.downloadDidwebDoc.onclick = () =>
     download('did.json', JSON.stringify(proposed, null, 2), 'application/did+json')
@@ -484,12 +486,52 @@ function renderDone(updated: PlcOperationData): void {
 el.downloadKey.addEventListener('click', () => {
   const key = state.rotationKey!
   download(
-    `atveto-rotation-key-${state.identity!.did}.json`,
-    keyBackupFile(key, {
+    `atveto-recovery-key-${state.identity!.did}.txt`,
+    keyBackupText(key, {
       did: state.identity!.did,
       handle: state.identity!.handle,
     }),
+    'text/plain',
   )
+})
+
+el.copyKey.addEventListener('click', async () => {
+  const key = state.rotationKey
+  const identity = state.identity
+  if (!key || !identity) return
+
+  const content = keyBackupText(key, {
+    did: identity.did,
+    handle: identity.handle,
+  })
+
+  const showCopied = (ok: boolean) => {
+    el.copyKey.textContent = ok ? t('done.copied') : t('done.copyFailed')
+    setTimeout(() => {
+      el.copyKey.textContent = t('done.copy')
+    }, 2500)
+  }
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(content)
+    } else {
+      // Fallback für Umgebungen ohne Clipboard-API
+      const textarea = document.createElement('textarea')
+      textarea.value = content
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.append(textarea)
+      textarea.select()
+      const ok = document.execCommand('copy')
+      textarea.remove()
+      if (!ok) throw new Error('copy failed')
+    }
+    showCopied(true)
+  } catch (err) {
+    console.error(err)
+    showCopied(false)
+  }
 })
 
 /* ------------------------------------------------------------------ */

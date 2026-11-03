@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="verify.pageTitle">atVeto – Schlüssel prüfen</title>
+    <meta name="description" content="Prüft einen ATProto-Recovery-Key lokal im Browser: leitet den öffentlichen Schlüssel ab und gleicht ihn mit der DID ab." />
+  </head>
+  <body>
+    <main id="app">
+      <div class="topbar">
+        <a class="back-link" href="./">← atVeto</a>
+        <div class="lang-switch" role="group" aria-label="Sprache / Language">
+          <button type="button" data-lang="de" class="lang">DE</button>
+          <span class="lang-sep">/</span>
+          <button type="button" data-lang="en" class="lang">EN</button>
+        </div>
+      </div>
+
+      <h1>atVeto</h1>
+      <p class="tagline" data-i18n="verify.tagline"></p>
+
+      <section id="verify-form-section">
+        <form id="verify-form">
+          <label for="key-input" data-i18n="verify.keyLabel"></label>
+          <textarea id="key-input" rows="6" spellcheck="false" required></textarea>
+
+          <label for="did-input" data-i18n="verify.didLabel"></label>
+          <input id="did-input" type="text" autocomplete="off" spellcheck="false"
+                 placeholder="z.B. name.bsky.social" />
+
+          <div class="row">
+            <button type="submit" id="verify-submit" data-i18n="verify.button"></button>
+          </div>
+          <p class="note" data-i18n="verify.localNote"></p>
+        </form>
+      </section>
+
+      <section id="verify-result" hidden>
+        <h2 data-i18n="verify.resultTitle"></h2>
+        <dl class="account-info" id="result-list"></dl>
+        <div id="result-warnings"></div>
+      </section>
+
+      <div id="error-box" class="error" hidden></div>
+
+      <footer>
+        <p class="fineprint" data-i18n="verify.footerNote"></p>
+        <p class="fineprint">
+          <a href="https://github.com/glanzel/atVeto" target="_blank" rel="noopener"
+            ><span data-i18n="footer.source"></span> · github.com/glanzel/atVeto</a
+          >
+        </p>
+      </footer>
+    </main>
+    <script type="module" src="/src/verify.ts"></script>
+  </body>
+</html>

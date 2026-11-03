@@ -8,15 +8,26 @@
  * externes Krypto-Modul nötig. Der gleiche Schlüsseltyp (ES256) wird
  * später auch für DPoP-Proofs im OAuth-Flow verwendet, ist dort aber
  * ein separates Schlüsselpaar.
+ *
+ * Privater Schlüssel im Multibase-Format (wie beim Eurosky-Umzug):
+ * `z…` = base58btc über [0x86, 0x26] (Multicodec p256-priv) + 32 Byte Scalar.
+ * Der öffentliche Schlüssel ist `did:key:zDnae…` (Multicodec p256-pub).
  */
 
 import { base58Encode } from './base58'
 
 const EC_P256 = { name: 'ECDSA', namedCurve: 'P-256' } as const
 
+/** Multicodec p256-pub (0x1200) als Varint */
+const P256_PUB_MULTICODEC = [0x80, 0x24]
+/** Multicodec p256-priv (0x1306) als Varint */
+const P256_PRIV_MULTICODEC = [0x86, 0x26]
+
 export interface RotationKeyPair {
-  /** did:key des öffentlichen Schlüssels (z. B. did:key:zDn…) */
+  /** did:key des öffentlichen Schlüssels (z. B. did:key:zDnae…) */
   didKey: string
+  /** privater Schlüssel als Multibase-String (z…) */
+  privateKeyMultibase: string
   /** privates JWK (inkl. d) – nur im Speicher, nie versenden/ablegen */
   privateJwk: JsonWebKey
   publicJwk: JsonWebKey
@@ -70,12 +81,23 @@ export function didKeyFromPublicJwk(publicJwk: JsonWebKey): string {
   const compressed = new Uint8Array(33)
   compressed[0] = (y[31] & 1) === 1 ? 0x03 : 0x02
   compressed.set(x, 1)
-  // Multicodec p256-pub (0x1200) als Varint: [0x80, 0x24]
-  const multicodec = [0x80, 0x24]
-  const prefixed = new Uint8Array(multicodec.length + compressed.length)
-  prefixed.set(multicodec, 0)
-  prefixed.set(compressed, multicodec.length)
+  const prefixed = new Uint8Array(P256_PUB_MULTICODEC.length + compressed.length)
+  prefixed.set(P256_PUB_MULTICODEC, 0)
+  prefixed.set(compressed, P256_PUB_MULTICODEC.length)
   return `did:key:z${base58Encode(prefixed)}`
+}
+
+/** Privaten Scalar ins Multibase-Format bringen (kompatibel zu EU-HAUL). */
+export function privateKeyMultibaseFromJwk(privateJwk: JsonWebKey): string {
+  if (!privateJwk.d) throw new Error('Privates JWK ohne d-Anteil')
+  const scalar = b64uToBytes(privateJwk.d)
+  if (scalar.length !== 32) {
+    throw new Error(`Unerwartete Scalarlänge: ${scalar.length}`)
+  }
+  const prefixed = new Uint8Array(P256_PRIV_MULTICODEC.length + scalar.length)
+  prefixed.set(P256_PRIV_MULTICODEC, 0)
+  prefixed.set(scalar, P256_PRIV_MULTICODEC.length)
+  return `z${base58Encode(prefixed)}`
 }
 
 /** Neues P-256-Schlüsselpaar für die DID-Rotation erzeugen. */
@@ -85,36 +107,33 @@ export async function generateRotationKey(): Promise<RotationKeyPair> {
   const publicJwk = await crypto.subtle.exportKey('jwk', pair.publicKey)
   return {
     didKey: didKeyFromPublicJwk(publicJwk),
+    privateKeyMultibase: privateKeyMultibaseFromJwk(privateJwk),
     privateJwk,
-    publicJwk: publicJwk,
+    publicJwk,
     createdAt: new Date().toISOString(),
   }
 }
 
 /**
- * Sicherheitsdatei für den Nutzer: privater JWK + Metadaten.
- * Wird nur auf Knopfdruck als Download erzeugt.
+ * Sicherungsdatei im Multibase-Format (bewusst kein JSON): der private
+ * Schlüssel steht als eine Zeile darin, der öffentliche als did:key.
  */
-export function keyBackupFile(
+export function keyBackupText(
   key: RotationKeyPair,
   meta: { did: string; handle: string },
 ): string {
-  return JSON.stringify(
-    {
-      type: 'atveto-rotation-key/v1',
-      warning:
-        'PRIVATER SCHLÜSSEL – nicht weitergeben, nicht in Cloud/Notizen ablegen. ' +
-        'Mit diesem Schlüssel kann die DID wiederhergestellt bzw. rotiert werden.',
-      did: meta.did,
-      handle: meta.handle,
-      didKey: key.didKey,
-      createdAt: key.createdAt,
-      publicJwk: key.publicJwk,
-      privateJwk: key.privateJwk,
-    },
-    null,
-    2,
-  )
+  return [
+    'atVeto recovery key (P-256, multibase)',
+    '',
+    `did:      ${meta.did}`,
+    `handle:   ${meta.handle}`,
+    `public:   ${key.didKey}`,
+    `private:  ${key.privateKeyMultibase}`,
+    `created:  ${key.createdAt}`,
+    '',
+    'Der private Schlüssel ist der Recovery-Schlüssel für die DID.',
+    'Nicht weitergeben, nicht in Cloud/Notizen ablegen.',
+  ].join('\n')
 }
 
 /** Privaten CryptoKey aus einem JWK für DPoP-Signaturen importieren. */

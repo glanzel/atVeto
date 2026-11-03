@@ -82,6 +82,9 @@ const STRINGS = {
       'Diese Datei existiert nur in deinem Browser und wird beim Schließen des Tabs gelöscht. ' +
       'Sie ist dein Recovery-Schlüssel für die DID – sicher aufbewahren, nicht in die Cloud legen.',
     'done.download': 'Privaten Schlüssel herunterladen',
+    'done.copy': 'Schlüssel kopieren',
+    'done.copied': 'Kopiert ✓',
+    'done.copyFailed': 'Kopieren nicht möglich – bitte herunterladen.',
     'done.close': 'Danach kannst du den Tab schließen.',
 
     'didweb.title': 'DID',
@@ -100,6 +103,43 @@ const STRINGS = {
       'an niemanden sonst. Während des OAuth-Logins liegt übergangsweise eine Session in sessionStorage, ' +
       'die direkt nach dem Token-Tausch wieder gelöscht wird.',
     'footer.source': 'Quellcode',
+
+    'verify.pageTitle': 'atVeto – Schlüssel prüfen',
+    'verify.tagline':
+      'Prüfe deinen Recovery-Key: Der öffentliche Schlüssel wird lokal abgeleitet und mit deiner DID abgeglichen.',
+    'verify.keyLabel': 'Privater Schlüssel (Multibase z… oder atVeto-Backup)',
+    'verify.didLabel': 'Handle oder DID (optional, für den Abgleich)',
+    'verify.button': 'Prüfen',
+    'verify.localNote':
+      'Die Prüfung des Schlüssels läuft komplett lokal – der private Schlüssel verlässt deinen Browser nicht. ' +
+      'Nur für den optionalen DID-Abgleich werden öffentliche Verzeichnisdaten geladen.',
+    'verify.resultTitle': 'Ergebnis',
+    'verify.format': 'Format',
+    'verify.formatBackup': 'atVeto-Backup',
+    'verify.formatMultibase': 'Multibase (z…)',
+    'verify.derived': 'Öffentlicher Schlüssel (abgeleitet)',
+    'verify.publicMatch': 'Abgleich mit Datei',
+    'verify.yes': 'stimmt überein',
+    'verify.mismatch': 'weicht ab!',
+    'verify.fileDid': 'DID (aus Datei)',
+    'verify.fileHandle': 'Handle (aus Datei)',
+    'verify.created': 'Erstellt (aus Datei)',
+    'verify.account': 'Account',
+    'verify.pds': 'PDS',
+    'verify.position': 'Position in rotationKeys',
+    'verify.positionFound': 'gefunden an Position {n}',
+    'verify.positionMissing': 'nicht enthalten',
+    'verify.keyCount': 'Anzahl Rotation Keys',
+    'verify.warnNotInDid':
+      'Dieser Schlüssel ist nicht in den Rotation Keys der DID enthalten. ' +
+      'Möglicherweise gehört er zu einem anderen Account oder wurde nie hinterlegt.',
+    'verify.warnPublicMismatch':
+      'Achtung: Der abgeleitete öffentliche Schlüssel weicht vom gespeicherten Public-Key ab. ' +
+      'Die Datei ist inkonsistent.',
+    'verify.accountError': 'DID-Abgleich nicht möglich',
+    'verify.footerNote':
+      'Läuft komplett in deinem Browser. Der private Schlüssel wird nicht übertragen und nicht gespeichert.',
+    'nav.verify': 'Schlüssel prüfen',
   },
   en: {
     'title': 'atVeto – your own recovery key for your Bluesky account',
@@ -173,6 +213,9 @@ const STRINGS = {
       'This file exists only in your browser and is deleted when you close the tab. ' +
       'It is the recovery key for your DID – store it safely, do not put it in the cloud.',
     'done.download': 'Download private key',
+    'done.copy': 'Copy key',
+    'done.copied': 'Copied ✓',
+    'done.copyFailed': 'Copy not possible – please download instead.',
     'done.close': 'You can close this tab afterwards.',
 
     'didweb.title': 'DID',
@@ -190,6 +233,42 @@ const STRINGS = {
       'services (handle/DID resolution) and to your own PDS – nowhere else. During OAuth login ' +
       'a transient session lives in sessionStorage, deleted right after the token exchange.',
     'footer.source': 'Source code',
+
+    'verify.pageTitle': 'atVeto – Verify a key',
+    'verify.tagline':
+      'Check your recovery key: the public key is derived locally and compared with your DID.',
+    'verify.keyLabel': 'Private key (multibase z… or atVeto backup)',
+    'verify.didLabel': 'Handle or DID (optional, for comparison)',
+    'verify.button': 'Verify',
+    'verify.localNote':
+      'Key verification runs entirely locally – the private key never leaves your browser. ' +
+      'Only public directory data is fetched for the optional DID comparison.',
+    'verify.resultTitle': 'Result',
+    'verify.format': 'Format',
+    'verify.formatBackup': 'atVeto backup',
+    'verify.formatMultibase': 'multibase (z…)',
+    'verify.derived': 'Public key (derived)',
+    'verify.publicMatch': 'Match with file',
+    'verify.yes': 'matches',
+    'verify.mismatch': 'mismatch!',
+    'verify.fileDid': 'DID (from file)',
+    'verify.fileHandle': 'Handle (from file)',
+    'verify.created': 'Created (from file)',
+    'verify.account': 'Account',
+    'verify.pds': 'PDS',
+    'verify.position': 'Position in rotationKeys',
+    'verify.positionFound': 'found at position {n}',
+    'verify.positionMissing': 'not present',
+    'verify.keyCount': 'Number of rotation keys',
+    'verify.warnNotInDid':
+      'This key is not among the rotation keys of the DID. It may belong to another account ' +
+      'or was never registered.',
+    'verify.warnPublicMismatch':
+      'Warning: the derived public key differs from the stored public key. The file is inconsistent.',
+    'verify.accountError': 'DID comparison not possible',
+    'verify.footerNote':
+      'Runs entirely in your browser. The private key is never transmitted or stored.',
+    'nav.verify': 'Verify key',
   },
 } as const
 
@@ -199,6 +278,12 @@ let current: Lang = detectLanguage()
 const listeners = new Set<(lang: Lang) => void>()
 
 function detectLanguage(): Lang {
+  try {
+    const stored = sessionStorage.getItem('atveto.lang')
+    if (stored === 'de' || stored === 'en') return stored
+  } catch {
+    /* Storage nicht verfügbar */
+  }
   const nav = navigator.language?.toLowerCase() ?? 'de'
   return nav.startsWith('de') ? 'de' : 'en'
 }
@@ -210,6 +295,12 @@ export function getLang(): Lang {
 export function setLang(lang: Lang): void {
   if (lang === current) return
   current = lang
+  try {
+    // Nur eine UI-Präferenz, keine Nutzerdaten – stirbt mit dem Tab.
+    sessionStorage.setItem('atveto.lang', lang)
+  } catch {
+    /* ignorieren */
+  }
   for (const listener of listeners) listener(lang)
 }
 

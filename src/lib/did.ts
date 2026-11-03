@@ -147,5 +147,9 @@ export async function resolveIdentity(input: string): Promise<ResolvedIdentity> 
   const doc = await fetchDidDocument(did)
   if (!isDid) assertHandleClaimed(doc, handle)
   const pdsUrl = pdsUrlFor(extractPdsUrl(doc))
-  return { handle: handle || did, did, doc, pdsUrl, didKind: kind }
+  // Bei DID-Eingabe (z. B. nach dem OAuth-Redirect) den Handle aus dem
+  // DID-Dokument ableiten, damit im Backup nicht die DID als Handle landet.
+  const claimed = doc.alsoKnownAs?.find((aka) => aka.startsWith('at://'))
+  const displayHandle = handle || (claimed ? claimed.slice('at://'.length) : did)
+  return { handle: displayHandle, did, doc, pdsUrl, didKind: kind }
 }

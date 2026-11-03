@@ -12,6 +12,7 @@
   <body>
     <main id="app">
       <div class="topbar">
+        <a class="back-link" href="./verify.html" data-i18n="nav.verify"></a>
         <div class="lang-switch" role="group" aria-label="Sprache / Language">
           <button type="button" data-lang="de" class="lang">DE</button>
           <span class="lang-sep">/</span>
@@ -140,7 +141,10 @@
 
         <h3 data-i18n="done.saveTitle"></h3>
         <p class="warning" data-i18n="done.warning"></p>
-        <button id="download-key" type="button" data-i18n="done.download"></button>
+        <div class="row">
+          <button id="download-key" type="button" data-i18n="done.download"></button>
+          <button id="copy-key" type="button" class="secondary" data-i18n="done.copy"></button>
+        </div>
         <p class="note" data-i18n="done.close"></p>
       </section>
 
