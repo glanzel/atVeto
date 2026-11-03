@@ -35,7 +35,7 @@ const STRINGS = {
       'spricht nur mit deinem PDS und den öffentlichen Verzeichnisdiensten.',
 
     'handle.label': 'Dein Bluesky-Handle',
-    'handle.submit': 'Key erstellen',
+    'handle.submit': 'Account prüfen',
 
     'check.title': 'Dein Account',
     'check.did': 'DID',
@@ -45,7 +45,7 @@ const STRINGS = {
       'zQ3s…-Keys (secp256k1) sind typischerweise die Schlüssel deines PDS. Ein zDn…-Key ' +
       '(P-256) ist typischerweise ein eigener Recovery-Key – zum Beispiel aus einem Umzug zu ' +
       'Eurosky oder einem anderen Tool.',
-    'check.continue': 'Weiter mit Login',
+    'check.continue': 'Schlüssel erstellen',
     'check.cancel': 'Abbrechen',
     'check.loginHint':
       'Der Login erfolgt auf der Seite deines PDS – atVeto sieht deine Zugangsdaten nie.',
@@ -126,7 +126,7 @@ const STRINGS = {
       'your PDS and the public directory services.',
 
     'handle.label': 'Your Bluesky handle',
-    'handle.submit': 'Create key',
+    'handle.submit': 'Check account',
 
     'check.title': 'Your account',
     'check.did': 'DID',
@@ -135,7 +135,7 @@ const STRINGS = {
     'check.keysNote':
       'zQ3s… keys (secp256k1) are typically your PDS’s keys. A zDn… key (P-256) is typically ' +
       'your own recovery key – e.g. from migrating to Eurosky or another tool.',
-    'check.continue': 'Continue with login',
+    'check.continue': 'Create key',
     'check.cancel': 'Cancel',
     'check.loginHint':
       'Login happens on your PDS page – atVeto never sees your credentials.',
