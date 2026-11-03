@@ -241,4 +241,10 @@ export function applyI18n(root: ParentNode = document): void {
       el.title = STRINGS[current][key]
     }
   }
+  for (const el of root.querySelectorAll('[data-i18n-aria]')) {
+    const key = el.getAttribute('data-i18n-aria') as StringKey
+    if (el instanceof HTMLElement && key in STRINGS[current]) {
+      el.setAttribute('aria-label', STRINGS[current][key])
+    }
+  }
 }

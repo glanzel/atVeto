@@ -114,23 +114,35 @@ h3 {
 
 /* Ausklappbare Erklärung hinter einem Info-Zeichen */
 .about {
-  margin: 0.9rem 0 1.2rem;
+  margin: 0.6rem 0 1rem;
   font-size: 0.9rem;
+  text-align: right;
 }
 
 .about summary {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.35rem;
   cursor: pointer;
   color: var(--accent);
   list-style: none;
-  font-weight: 500;
   user-select: none;
+  padding: 0.15rem;
 }
 
 .about summary::-webkit-details-marker {
   display: none;
+}
+
+.chevron {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: var(--muted);
+  transition: transform 0.15s ease;
+}
+
+.about[open] .chevron {
+  transform: rotate(90deg);
 }
 
 .info-icon {
@@ -149,12 +161,13 @@ h3 {
 }
 
 .about-body {
-  margin-top: 0.7rem;
+  margin-top: 0.6rem;
   padding: 0.8rem 1rem;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--card);
   color: var(--fg);
+  text-align: left;
 }
 
 .about-body p {
